@@ -63,10 +63,27 @@ $superheroes = [
   ], 
 ];
 
-?>
+// Sanitize the input query to prevent XSS attacks
+$query = isset($_GET['query']) ? filter_var($_GET['query'], FILTER_SANITIZE_STRING) : '';
 
-<ul>
-<?php foreach ($superheroes as $superhero): ?>
-  <li><?= $superhero['alias']; ?></li>
-<?php endforeach; ?>
-</ul>
+// If a query is provided, search for the superhero
+if ($query) {
+    $foundHero = null;
+    foreach ($superheroes as $hero) {
+        if (strcasecmp($hero['alias'], $query) == 0 || strcasecmp($hero['name'], $query) == 0) {
+            $foundHero = $hero;
+            break;
+        }
+    }
+
+    // Return a specific superhero or an error message if not found
+    if ($foundHero) {
+        echo json_encode($foundHero);
+    } else {
+        echo json_encode(["error" => "Superhero not found"]);
+    }
+} else {
+    // If no query is provided, return the full list of superheroes
+    echo json_encode($superheroes);
+}
+?>
